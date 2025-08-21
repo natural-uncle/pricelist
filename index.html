@@ -5,33 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自然大叔｜家電清洗服務價目表</title>
     <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #222;
+            --header-bg: #2d6a4f;
+            --card-bg: #ffffff;
+            --price-color: #d00000;
+            --btn-line: #06c755;
+            --btn-call: #1e90ff;
+        }
+        body.dark {
+            --bg-color: #121212;
+            --text-color: #f1f1f1;
+            --header-bg: #1b4332;
+            --card-bg: #1e1e1e;
+            --price-color: #ff6b6b;
+            --btn-line: #06c755;
+            --btn-call: #4a90e2;
+        }
         body {
             font-family: 'Microsoft JhengHei', sans-serif;
-            background-color: #f8f9fa;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
             padding: 0;
             line-height: 1.8;
+            transition: background 0.3s, color 0.3s;
         }
         header {
-            background-color: #2d6a4f;
+            background-color: var(--header-bg);
             color: white;
             text-align: center;
             padding: 20px 10px;
+            position: relative;
         }
         h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
         }
         main {
             max-width: 800px;
-            background: white;
+            background: var(--card-bg);
             margin: 20px auto;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         h2 {
-            color: #1b4332;
+            color: var(--header-bg);
             border-left: 5px solid #40916c;
             padding-left: 10px;
         }
@@ -43,14 +64,14 @@
             padding: 5px 0;
         }
         .price {
-            color: #d00000;
+            color: var(--price-color);
             font-weight: bold;
         }
         footer {
             text-align: center;
             padding: 20px;
             font-size: 0.9rem;
-            color: #555;
+            color: #aaa;
         }
         .btn {
             display: inline-block;
@@ -62,16 +83,35 @@
             font-weight: bold;
         }
         .btn-line {
-            background-color: #06c755;
+            background-color: var(--btn-line);
         }
         .btn-call {
-            background-color: #ff6b6b;
+            background-color: var(--btn-call);
+        }
+        /* 手動切換按鈕 */
+        .theme-toggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #444;
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 1.2rem; }
+            main { margin: 10px; padding: 15px; }
+            .btn { display: block; width: 100%; margin: 8px 0; text-align: center; }
         }
     </style>
 </head>
 <body>
     <header>
         <h1>📌 自然大叔｜家電清洗服務價目表</h1>
+        <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌙 深色</button>
     </header>
 
     <main>
@@ -87,7 +127,7 @@
 
         <h2>🚿 水管清洗</h2>
         <ul>
-            <li>自來水管清洗保養
+            <li>自來水管清洗保養</li>
             <li>無廚一衛 <span class="price">$3200</span> </li>
             <li>一廚一衛 <span class="price">$4200</span>（每增加一廚或一衛加收 <span class="price">$500</span>、每多一迴路加收 <span class="price">$1000</span>、五樓以上每層加收 <span class="price">$1000</span>）</li>
         </ul>
@@ -97,28 +137,57 @@
             <li>直立式洗衣機清洗：每台 <span class="price">$2,000</span>（若有清洗冷氣，再優惠 <span class="price">$200</span>）</li>
             <li>家用水塔清洗：每一顆 <span class="price">$1,000</span>（若同時清洗自來水管，再優惠 <span class="price">$200</span>）</li>
         </ul>
-    </div>
 
-        <div class="section">
-            <h2>✳️ 選配項目</h2>
-            <ul>
-                <li>冷氣防黴處理：每台 <span class="price">$300</span> ，滿五台優惠 <span class="price">$250／台</span><br>
-                    <small>採用奈米級抗菌、日本納豆菌淨化技術、無香料添加水性原料</small>
-                </li>
-                <li>臭氧全面消毒（<span class="price">密閉空間</span>）：每間房 <span class="price">$200</span> <br>
-                    <small>功能：除臭、氧化污染物、抑菌防霉、空氣淨化</small>
-                </li>
-            </ul>
-        </div>
+        <h2>✳️ 選配項目</h2>
+        <ul>
+            <li>冷氣防黴處理：每台 <span class="price">$300</span> ，滿五台優惠 <span class="price">$250／台</span><br>
+                <small>採用奈米級抗菌、日本納豆菌淨化技術、無香料添加水性原料</small>
+            </li>
+            <li>臭氧全面消毒（<span class="price">密閉空間</span>）：每間房 <span class="price">$200</span> <br>
+                <small>功能：除臭、氧化污染物、抑菌防霉、空氣淨化</small>
+            </li>
+        </ul>
 
         <div style="text-align:center; margin-top:20px;">
             <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
-            <a href="tel:0912356331" class="btn btn-call" button style="background-color: DodgerBlue;">📞 立即來電</button></a>
+            <a href="tel:0912356331" class="btn btn-call">📞 立即來電</a>
         </div>
     </main>
 
     <footer>
         © 2025 自然大叔｜專業家電清洗服務
     </footer>
+
+    <script>
+        const themeToggleBtn = document.getElementById('theme-toggle');
+
+        // 初始化：載入使用者上次選擇
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+                themeToggleBtn.textContent = "☀️ 淺色";
+            }
+        } else {
+            // 沒有記錄，依系統偏好
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                document.body.classList.add('dark');
+                themeToggleBtn.textContent = "☀️ 淺色";
+            }
+        }
+
+        // 手動切換主題
+        function toggleTheme() {
+            document.body.classList.toggle('dark');
+            if (document.body.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.textContent = "☀️ 淺色";
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.textContent = "🌙 深色";
+            }
+        }
+    </script>
 </body>
 </html>
