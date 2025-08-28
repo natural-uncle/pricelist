@@ -14,9 +14,7 @@
       --btn-line: #06c755;
       --btn-call: #1e90ff;
       --bar-bg: rgba(255, 255, 255, 0.95);
-      --bar-shadow: 0 -6px 24px rgba(0,0,0,0.08);
-      --divider: rgba(0,0,0,.08);
-      --cta-h: 112px; /* 預設底部列高度，JS 會覆寫實際高度 */
+      --bar-shadow: 0 -6px 24px rgba(0, 0, 0, 0.08);
     }
     body.dark {
       --bg-color: #121212;
@@ -28,9 +26,9 @@
       --btn-call: #4a90e2;
       --bar-bg: rgba(18, 18, 18, 0.95);
       --bar-shadow: 0 -6px 24px rgba(0, 0, 0, 0.35);
-      --divider: rgba(255,255,255,.12);
     }
 
+    /* Base */
     html, body { height: 100%; }
     body {
       font-family: 'Microsoft JhengHei', system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans TC', sans-serif;
@@ -40,69 +38,95 @@
       line-height: 1.8;
       transition: background 0.3s, color 0.3s;
     }
-    :focus-visible { outline: 3px solid #7cc; outline-offset: 2px; }
-
     header {
       background-color: var(--header-bg);
       color: white;
       text-align: center;
       padding: 20px 10px;
+      position: relative;
     }
     h1 { margin: 0; font-size: 1.6rem; }
-
-    main { max-width: 900px; margin: 20px auto; padding: 0 16px 20px; }
-
-    /* === 可拖曳主題切換按鈕（浮動） === */
-    .theme-fab {
-      position: fixed; z-index: 1000;
-      right: 16px;
-      bottom: calc(var(--cta-h, 112px) + 16px + env(safe-area-inset-bottom));
-      background:#444; color:#fff; border:none; padding:12px 14px; border-radius:999px;
-      font-size:14px; font-weight:600; cursor: grab; user-select: none; touch-action: none;
-      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+    main {
+      max-width: 800px;
+      background: var(--card-bg);
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .theme-fab:active{ cursor: grabbing; }
-
-    /* 章節卡片 */
-    .section-card { background: var(--card-bg); border: 1px solid var(--divider); border-radius: 14px; padding: 18px; box-shadow: 0 2px 10px rgba(0,0,0,.06); margin-top: 20px; }
-    .section-card > h2 { margin: 0 0 12px; color: var(--header-bg); border-left: 5px solid #40916c; padding-left: 10px; }
-
-    /* 內部清單：卡片化項目 */
+    h2 {
+      color: var(--header-bg);
+      border-left: 5px solid #40916c;
+      padding-left: 10px;
+    }
     ul { list-style: none; padding: 0; margin: 0; }
-    .list-cards { display: grid; gap: 12px; grid-template-columns: 1fr; }
-    @media (min-width: 720px) { .list-cards { grid-template-columns: repeat(2, 1fr); } }
-    .list-cards > li { background: var(--card-bg); border: 1px solid var(--divider); border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-    .title { font-weight: 800; letter-spacing: .3px; }
-    .meta { font-size: 13px; opacity: .85; }
-    .price { color: var(--price-color); font-weight: 800; }
-    .price-line { display:flex; justify-content:space-between; gap:12px; margin-top:6px; align-items: baseline; }
-    .price-line .label { flex: 1; }
-    .price-line .price { min-width: 6em; text-align: right; }
-    .badge { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; background:#ffe8cc; color:#b85c00; }
+    li { padding: 5px 0; }
+    .price { color: var(--price-color); font-weight: bold; }
+    footer {
+      text-align: center; padding: 20px; font-size: 0.9rem; color: #aaa;
+    }
 
-    footer { text-align: center; padding: 20px 16px; font-size: 0.9rem; color: #aaa; }
-
-    /* Buttons */
-    .btn { display: inline-block; padding: 10px 20px; margin: 10px 5px; border-radius: 10px; text-decoration: none; color: white; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+    /* Buttons (desktop / default) */
+    .btn {
+      display: inline-block; padding: 10px 20px; margin: 10px 5px;
+      border-radius: 10px; text-decoration: none; color: white; font-weight: 700;
+      box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    }
     .btn:active { transform: translateY(1px); }
     .btn-line { background-color: var(--btn-line); }
     .btn-call { background-color: var(--btn-call); }
-    .cta-desktop { text-align:center; margin-top: 12px; }
+
+    .cta-desktop { text-align:center; margin-top: 20px; }
+
+    /* Draggable theme toggle (FAB) */
+    .theme-fab {
+      position: fixed; /* 可隨螢幕移動 */
+      right: 16px;
+      bottom: 88px; /* 預留行動底部CTA空間 */
+      z-index: 1000;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 12px 14px;
+      border-radius: 999px;
+      cursor: grab;
+      font-size: 14px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      user-select: none;
+      touch-action: none; /* 讓touch事件可拖曳 */
+    }
+    .theme-fab:active { cursor: grabbing; }
 
     /* Mobile bottom action bar */
-    .mobile-cta { position: fixed; left: 0; right: 0; bottom: 0; background: var(--bar-bg); backdrop-filter: blur(8px); box-shadow: var(--bar-shadow); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); display: none; z-index: 999; border-top: 1px solid var(--divider); min-height: var(--cta-h); }
-    .mobile-cta .wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-    .mobile-cta .btn { width: 100%; margin: 0; text-align: center; padding: 15px 18px; border-radius: 12px; font-size: 16px; }
+    .mobile-cta {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      background: var(--bar-bg);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--bar-shadow);
+      padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+      display: none; /* default hidden on desktop */
+      z-index: 999; /* under FAB */
+    }
+    .mobile-cta .wrap {
+      max-width: 900px; margin: 0 auto; display: grid; gap: 10px; grid-template-columns: 1fr 1fr;
+    }
+    .mobile-cta .btn { width: 100%; margin: 0; text-align: center; padding: 14px 16px; border-radius: 12px; }
 
-    /* 行動版：保留 CTA 空間，避免遮擋頁尾與內容（純 CSS 後備 + JS 動態覆蓋） */
-    .mobile-cta-spacer { display: none; }
+    /* Ensure main content is not covered by the fixed CTA on mobile */
+    .page-bottom-pad { height: 84px; }
+
+    /* Responsive tweaks */
     @media (max-width: 600px) {
       h1 { font-size: 1.2rem; }
-      main { padding: 0 12px 16px; }
+      main { margin: 10px; padding: 16px; }
+
+      /* Hide desktop button block and use fixed bottom bar instead */
       .cta-desktop { display: none; }
       .mobile-cta { display: block; }
-      body { padding-bottom: calc(var(--cta-h) + env(safe-area-inset-bottom)); }
-      .mobile-cta-spacer { display:block; height: calc(var(--cta-h) + env(safe-area-inset-bottom)); }
+
+      /* Extra bottom padding inside main to avoid overlap with bottom bar */
+      .page-bottom-pad { height: calc(96px + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -111,76 +135,54 @@
     <h1>📌 自然大叔｜家電清洗服務價目表</h1>
   </header>
 
-  <!-- 浮動可拖曳的主題切換鍵（全站共用） -->
+  <!-- 可拖曳的主題切換鍵（預設停駐右下） -->
   <button id="theme-fab" class="theme-fab" aria-label="切換深/淺色主題">🌙 深色</button>
 
   <main>
-    <!-- 冷氣清洗 -->
-    <section class="section-card" aria-labelledby="sec-ac">
-      <h2 id="sec-ac">💨 冷氣清洗</h2>
-      <ul class="list-cards">
-        <li>
-          <div class="title">分離式冷氣</div>
-          <div class="price-line"><div class="label">每台</div><div class="price">$1,800</div></div>
-        </li>
-        <li>
-          <div class="title">分離式冷氣（團購/多台）<span class="badge">熱門</span></div>
-          <div class="price-line"><div class="label">三台以上／每台</div><div class="price">$1,500</div></div>
-        </li>
-        <li>
-          <div class="title">吊隱式冷氣</div>
-          <div class="price-line"><div class="label">每台</div><div class="price">$2,800</div></div>
-        </li>
-        <li>
-          <div class="title">加價條款</div>
-          <div class="meta">
-            <ul>
-              <li>📏 室內機長度 &gt; 182 cm：每台加收 <span class="price">$300</span>（加長費）</li>
-              <li>🧩 變形金剛系列：每台加收 <span class="price">$500</span>（國際牌 CU/CS-PX.GX.QX.LX、三菱變形金剛、富士通變形）</li>
-              <li>🧺 富士通一體式水盤：每台加收 <span class="price">$500</span></li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </section>
+    <h2>💨 冷氣清洗</h2>
+    <ul>
+      <li>分離式冷氣：每台 <span class="price">$1,800</span></li>
+      <li>└ 三台以上：每台 <span class="price">$1,500</span></li>
+      <li>室內機長度 &gt; 182 cm：每台加收 <span class="price">$300</span>（加長費）</li>
+      <li>變形金剛系列：每台加收 <span class="price">$500</span>（國際牌 CU/CS-PX.GX.QX.LX 系列、三菱變形金剛、富士通變形系列）</li>
+      <li>富士通一體式水盤：每台加收 <span class="price">$500</span></li>
+      <li>吊隱式冷氣：每台 <span class="price">$2,800</span></li>
+    </ul>
 
-    <!-- 水管清洗 -->
-    <section class="section-card" aria-labelledby="sec-pipe">
-      <h2 id="sec-pipe">🚿 水管清洗</h2>
-      <ul class="list-cards">
-        <li><div class="title">自來水管清洗保養</div><div class="meta">標準住宅適用</div></li>
-        <li><div class="title">無廚一衛</div><div class="price-line"><div class="label">套內基礎方案</div><div class="price">$3,200</div></div></li>
-        <li><div class="title">一廚一衛</div><div class="price-line"><div class="label">標準方案</div><div class="price">$4,200</div></div><div class="meta" style="margin-top:6px;">每增加一廚或一衛 <span class="price">+$500</span>；每多一迴路 <span class="price">+$1,000</span>；五樓以上每層 <span class="price">+$1,000</span></div></li>
-      </ul>
-    </section>
+    <h2>🚿 水管清洗</h2>
+    <ul>
+      <li>自來水管清洗保養</li>
+      <li>無廚一衛 <span class="price">$3200</span></li>
+      <li>一廚一衛 <span class="price">$4200</span>（每增加一廚或一衛加收 <span class="price">$500</span>、每多一迴路加收 <span class="price">$1000</span>、五樓以上每層加收 <span class="price">$1000</span>）</li>
+    </ul>
 
-    <!-- 其他服務 -->
-    <section class="section-card" aria-labelledby="sec-others">
-      <h2 id="sec-others">🌀 其他服務</h2>
-      <ul class="list-cards">
-        <li><div class="title">直立式洗衣機清洗</div><div class="price-line"><div class="label">每台</div><div class="price">$2,000</div></div><div class="meta" style="margin-top:6px;">若有清洗冷氣，再優惠 <span class="price">$200</span></div></li>
-        <li><div class="title">家用水塔清洗</div><div class="price-line"><div class="label">每一顆</div><div class="price">$1,000</div></div><div class="meta" style="margin-top:6px;">若同時清洗自來水管，再優惠 <span class="price">$200</span></div></li>
-      </ul>
-    </section>
+    <h2>🌀 其他服務</h2>
+    <ul>
+      <li>直立式洗衣機清洗：每台 <span class="price">$2,000</span>（若有清洗冷氣，再優惠 <span class="price">$200</span>）</li>
+      <li>家用水塔清洗：每一顆 <span class="price">$1,000</span>（若同時清洗自來水管，再優惠 <span class="price">$200</span>）</li>
+    </ul>
 
-    <!-- 選配項目 -->
-    <section class="section-card" aria-labelledby="sec-addons">
-      <h2 id="sec-addons">✳️ 選配項目</h2>
-      <ul class="list-cards">
-        <li><div class="title">冷氣防黴處理</div><div class="price-line"><div class="label">每台</div><div class="price">$300</div></div><div class="meta" style="margin-top:6px;">滿五台優惠 <span class="price">$250／台</span>；奈米級抗菌、日本納豆菌淨化、無香料水性原料</div></li>
-        <li><div class="title">臭氧全面消毒（密閉空間）</div><div class="price-line"><div class="label">每間房</div><div class="price">$200</div></div><div class="meta" style="margin-top:6px;">除臭、氧化污染物、抑菌防霉、空氣淨化</div></li>
-      </ul>
-    </section>
+    <h2>✳️ 選配項目</h2>
+    <ul>
+      <li>冷氣防黴處理：每台 <span class="price">$300</span> ，滿五台優惠 <span class="price">$250／台</span><br />
+        <small>採用奈米級抗菌、日本納豆菌淨化技術、無香料添加水性原料</small>
+      </li>
+      <li>臭氧全面消毒（<span class="price">密閉空間</span>）：每間房 <span class="price">$200</span><br />
+        <small>功能：除臭、氧化污染物、抑菌防霉、空氣淨化</small>
+      </li>
+    </ul>
 
-    <!-- 桌機版 CTA -->
+    <!-- 桌機版：置於模塊內、水平置中 -->
     <div class="cta-desktop">
-      <div class="meta" style="opacity:.85; margin-bottom:6px;">馬上預約，三台以上現省 $900</div>
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
       <a href="tel:0912356331" class="btn btn-call">📞 立即來電</a>
     </div>
+
+    <!-- 占位，避免內容被行動底部列遮住 -->
+    <div class="page-bottom-pad" aria-hidden="true"></div>
   </main>
 
-  <!-- 行動版：固定底部操作列（固定於視窗） -->
+  <!-- 行動版：固定底部操作列，不會超出模塊且留安全區 -->
   <div class="mobile-cta" role="region" aria-label="快速聯絡">
     <div class="wrap">
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
@@ -189,10 +191,11 @@
   </div>
 
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
-  <div class="mobile-cta-spacer" aria-hidden="true"></div>
 
   <script>
-    // === 主題維持與切換 ===
+    // ------------------------------
+    // Theme persistence + toggle text
+    // ------------------------------
     const themeFab = document.getElementById('theme-fab');
     function applyThemeFromStorage() {
       const savedTheme = localStorage.getItem('theme');
@@ -207,97 +210,97 @@
       localStorage.setItem('theme', nowDark ? 'dark' : 'light');
       themeFab.textContent = nowDark ? '☀️ 淺色' : '🌙 深色';
     }
-    themeFab.addEventListener('click', (e) => { if (themeFab._dragging) return; toggleTheme(); });
+    themeFab.addEventListener('click', (e) => {
+      // 若是拖曳中的點擊，會被drag流程攔截，這裡無需處理
+      if (themeFab._dragging) return;
+      toggleTheme();
+    });
+
+    // 初始化主題
     applyThemeFromStorage();
 
-    // === 行動底部 CTA 高度偵測（覆寫 --cta-h，避免遮擋 footer 與 FAB） ===
-    function updateCtaHeight(){
-      const mq = window.matchMedia('(max-width: 600px)');
-      const cta = document.querySelector('.mobile-cta');
-      if (!cta) return;
-      const visible = mq.matches && getComputedStyle(cta).display !== 'none';
-      const value = visible ? Math.ceil(cta.getBoundingClientRect().height) + 'px' : '0px';
-      document.documentElement.style.setProperty('--cta-h', value);
-      clampFabIntoViewport();
-    }
-
-    // === 可拖曳 FAB ===
-    (function makeDraggableFab(btn){
+    // ------------------------------
+    // Draggable FAB（支援滑鼠與觸控）
+    // ------------------------------
+    (function makeDraggableFab(btn) {
       let startX = 0, startY = 0, startLeft = 0, startTop = 0;
       let dragging = false;
 
-      // 若存在記憶位置，套用
-      const saved = localStorage.getItem('themeFabPos');
-      if (saved) {
-        try { const {left, top} = JSON.parse(saved); setFabPos(left, top); } catch(e){}
+      // 讀取先前位置（以視窗座標儲存）
+      const savedPos = localStorage.getItem('themeFabPos');
+      if (savedPos) {
+        try {
+          const { left, top } = JSON.parse(savedPos);
+          btn.style.left = left + 'px';
+          btn.style.top = top + 'px';
+          btn.style.right = 'auto'; // 以left/top為主
+          btn.style.bottom = 'auto';
+        } catch (e) {}
       }
 
-      function setFabPos(l, t) {
-        btn.style.left = l + 'px';
-        btn.style.top = t + 'px';
-        btn.style.right = 'auto'; btn.style.bottom = 'auto';
-      }
-      function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
-      function getCtaH(){
-        const raw = getComputedStyle(document.documentElement).getPropertyValue('--cta-h').trim();
-        const n = parseFloat(raw || '0');
-        return isNaN(n) ? 0 : n;
-      }
-      function clampFabIntoViewport(){
+      function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+      function onPointerDown(clientX, clientY) {
+        dragging = false;
+        btn._dragging = false;
+        startX = clientX;
+        startY = clientY;
         const rect = btn.getBoundingClientRect();
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const margin = 8; const bottomGuard = getCtaH() + 8; // 預留底部 CTA 空間
-        const left = clamp(rect.left, margin, vw - rect.width - margin);
-        const top  = clamp(rect.top,  margin, vh - rect.height - bottomGuard);
-        setFabPos(left, top);
-        localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
-      }
-
-      function onPointerDown(e){
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        e.preventDefault();
-        dragging = false; btn._dragging = false;
-        startX = e.clientX; startY = e.clientY;
-        const r = btn.getBoundingClientRect(); startLeft = r.left; startTop = r.top;
+        startLeft = rect.left;
+        startTop = rect.top;
         window.addEventListener('pointermove', onPointerMove);
         window.addEventListener('pointerup', onPointerUp);
       }
-      function onPointerMove(e){
-        const dx = e.clientX - startX; const dy = e.clientY - startY;
-        if (!dragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) { dragging = true; btn._dragging = true; }
+      function onPointerMove(e) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (!dragging && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
+          dragging = true;
+          btn._dragging = true;
+        }
         if (!dragging) return;
-        const vw = window.innerWidth, vh = window.innerHeight;
-        const r = btn.getBoundingClientRect();
-        const margin = 8; const bottomGuard = getCtaH() + 8;
-        let newLeft = clamp(startLeft + dx, margin, vw - r.width - margin);
-        let newTop  = clamp(startTop  + dy, margin, vh - r.height - bottomGuard);
-        setFabPos(newLeft, newTop);
+
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const rect = btn.getBoundingClientRect();
+        let newLeft = clamp(startLeft + dx, 8, vw - rect.width - 8);
+        let newTop = clamp(startTop + dy, 8, vh - rect.height - 8);
+        btn.style.left = newLeft + 'px';
+        btn.style.top = newTop + 'px';
+        btn.style.right = 'auto';
+        btn.style.bottom = 'auto';
       }
-      function onPointerUp(){
+      function onPointerUp() {
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
-        if (dragging){
-          const r = btn.getBoundingClientRect();
-          localStorage.setItem('themeFabPos', JSON.stringify({left: r.left, top: r.top}));
-          setTimeout(()=>{ btn._dragging = false; }, 0);
+        if (dragging) {
+          // 儲存位置
+          const rect = btn.getBoundingClientRect();
+          localStorage.setItem('themeFabPos', JSON.stringify({ left: rect.left, top: rect.top }));
+          // 稍延遲重置drag flag，避免立即觸發click
+          setTimeout(() => { btn._dragging = false; }, 0);
         }
       }
 
-      btn.addEventListener('pointerdown', onPointerDown);
-      window.addEventListener('resize', clampFabIntoViewport);
-      window.addEventListener('orientationchange', clampFabIntoViewport);
+      // 使用 Pointer Events 同時支援滑鼠/觸控/手寫筆
+      btn.addEventListener('pointerdown', (e) => {
+        // 只有主鍵或觸控才開始拖曳
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        e.preventDefault();
+        onPointerDown(e.clientX, e.clientY);
+      });
 
-      // 首次載入後依底部 CTA 高度調整位置（若尚未有記憶位置，維持 CSS 預設 bottom）
-      setTimeout(()=>{ if (!saved) clampFabIntoViewport(); }, 0);
-      window.clampFabIntoViewport = clampFabIntoViewport; // 給 updateCtaHeight 呼叫
+      // 在視窗resize時，確保FAB仍在可視範圍內
+      window.addEventListener('resize', () => {
+        const rect = btn.getBoundingClientRect();
+        const vw = window.innerWidth; const vh = window.innerHeight;
+        const left = clamp(rect.left, 8, vw - rect.width - 8);
+        const top = clamp(rect.top, 8, vh - rect.height - 8);
+        btn.style.left = left + 'px';
+        btn.style.top = top + 'px';
+        btn.style.right = 'auto'; btn.style.bottom = 'auto';
+        localStorage.setItem('themeFabPos', JSON.stringify({ left, top }));
+      });
     })(themeFab);
-
-    // 綁定事件：量測 CTA
-    window.addEventListener('load', updateCtaHeight);
-    window.addEventListener('resize', updateCtaHeight);
-    window.addEventListener('orientationchange', updateCtaHeight);
-    const ctaEl = document.querySelector('.mobile-cta');
-    if (window.ResizeObserver && ctaEl) new ResizeObserver(updateCtaHeight).observe(ctaEl);
   </script>
 </body>
 </html>
