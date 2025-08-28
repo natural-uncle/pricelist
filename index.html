@@ -17,7 +17,7 @@
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
       /* ↓ 下修預設高度 */
-      --cta-h:60px;
+      --cta-h:30px;
     }
     body.dark{
       --bg-color:#121212;
@@ -88,7 +88,7 @@
       position:fixed; left:0; right:0; bottom:0;
       background:var(--bar-bg); backdrop-filter:blur(8px); box-shadow:var(--bar-shadow);
       /* ↓ 下修 padding 讓總高度更小 */
-      padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+      padding:2px 4px calc(2px + env(safe-area-inset-bottom));
       display:none; z-index:999; border-top:1px solid var(--divider);
       min-height:var(--cta-h);
     }
