@@ -17,7 +17,7 @@
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
       /* ↓ 下修預設高度 */
-      --cta-h:10px;
+      --cta-h:30px;
     }
     body.dark{
       --bg-color:#121212;
@@ -31,7 +31,7 @@
       --bar-shadow:0 -6px 24px rgba(0,0,0,.35);
       --divider:rgba(255,255,255,.12);
       /* ↓ 深色也同步下修 */
-      --cta-h:60px;
+      --cta-h:30px;
     }
 
     html,body{height:100%}
@@ -86,7 +86,7 @@
     /* 手機底部 CTA（更扁） */
     .mobile-cta{
       position:fixed; left:0; right:0; bottom:0;
-      background:var(--bar-bg); backdrop-filter:blur(6px); box-shadow:var(--bar-shadow);
+      background:var(--bar-bg); backdrop-filter:blur(8px); box-shadow:var(--bar-shadow);
       /* ↓ 下修 padding 讓總高度更小 */
       padding:2px 4px calc(2px + env(safe-area-inset-bottom));
       display:none; z-index:999; border-top:1px solid var(--divider);
