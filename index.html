@@ -16,7 +16,7 @@
       --bar-bg:rgba(255,255,255,.95);
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
-      --cta-h: 96px; /* 行動底部列的預設高度（JS 會覆蓋成實際值） */
+      --cta-h:96px; /* 底部 CTA 預設高度；JS 會覆寫為實際值 */
     }
     body.dark{
       --bg-color:#121212;
@@ -57,7 +57,7 @@
       padding:0 16px 20px;
     }
 
-    /* 可拖曳主題切換鍵（浮動） */
+    /* 可拖曳主題切換鍵（浮動＋吸附） */
     .theme-fab{
       position:fixed; z-index:1000;
       right:16px;
@@ -65,6 +65,7 @@
       background:#444; color:#fff; border:none; padding:12px 14px; border-radius:999px;
       font-size:14px; font-weight:600; cursor:grab; user-select:none; touch-action:none;
       box-shadow:0 10px 24px rgba(0,0,0,.18);
+      transition: left .2s ease, top .2s ease; /* 放手時吸附動畫 */
     }
     .theme-fab:active{ cursor:grabbing; }
 
@@ -133,19 +134,13 @@
     }
     .mobile-cta .btn{ width:100%; margin:0; text-align:center; padding:15px 18px; border-radius:12px; font-size:16px; }
 
-    /* 行動版：保留 CTA 空間，避免遮擋 footer 與內容（即使 JS 失效也有預設留白） */
-    .mobile-cta-spacer{ display:none; }
+    /* 行動版：只保留 body 的 padding-bottom（移除 spacer 造成的雙重留白） */
     @media (max-width:600px){
       h1{ font-size:1.2rem; }
       main{ padding:0 12px 16px; }
       .cta-desktop{ display:none; }
       .mobile-cta{ display:block; }
-      body{ padding-bottom:calc(var(--cta-h) + env(safe-area-inset-bottom)); }
-      .mobile-cta-spacer{ display:block; height:calc(var(--cta-h) + env(safe-area-inset-bottom)); }
-    }
-    @media (max-width:400px){
-      .list-cards>li{ padding:14px 16px; }
-      .mobile-cta .btn{ padding:16px 18px; font-size:17px; }
+      body{ padding-bottom:calc(var(--cta-h) + env(safe-area-inset-bottom)); } /* footer 不被蓋，且不會多留白 */
     }
   </style>
 </head>
@@ -154,7 +149,7 @@
     <h1>📌 自然大叔｜家電清洗服務價目表</h1>
   </header>
 
-  <!-- 浮動可拖曳主題鍵 -->
+  <!-- 浮動可拖曳主題鍵（拖曳後自動靠邊吸附） -->
   <button id="theme-fab" class="theme-fab" aria-label="切換深/淺色主題">🌙 深色</button>
 
   <main>
@@ -258,7 +253,6 @@
   </div>
 
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
-  <div class="mobile-cta-spacer" aria-hidden="true"></div>
 
   <script>
     /* 主題維持與切換 */
@@ -279,73 +273,98 @@
     themeFab.addEventListener('click', (e)=>{ if(themeFab._dragging) return; toggleTheme(); });
     applyThemeFromStorage();
 
-    /* 行動底部 CTA 高度偵測：避免遮擋內容/頁尾，並讓 FAB 避開 CTA */
-    function clampFabIntoViewport(){
-      const btn = themeFab;
-      if(!btn) return;
-      const rect = btn.getBoundingClientRect();
-      const vw = window.innerWidth, vh = window.innerHeight;
-      const margin = 8;
-      const ctaHpx = getComputedStyle(document.documentElement).getPropertyValue('--cta-h').trim();
-      const ctaH = Math.max(0, parseFloat(ctaHpx) || 0);
-      const left = Math.max(margin, Math.min(rect.left, vw - rect.width - margin));
-      const top  = Math.max(margin, Math.min(rect.top,  vh - rect.height - (ctaH + 8)));
-      btn.style.left = left + 'px';
-      btn.style.top  = top + 'px';
-      btn.style.right = 'auto'; btn.style.bottom = 'auto';
-      localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
-    }
-    function updateCtaHeight(){
+    /* 量測 CTA 高度（避免蓋住 footer，並提供給 FAB 避讓） */
+    function getCtaHeight(){
       const mq = window.matchMedia('(max-width: 600px)');
       const cta = document.querySelector('.mobile-cta');
       const visible = !!cta && mq.matches && getComputedStyle(cta).display !== 'none';
-      const raw = visible ? Math.ceil(cta.getBoundingClientRect().height) : 0;
-      /* 限制高度範圍避免錯誤：介於 60px ~ 200px */
-      const safe = Math.max(60, Math.min(raw, 200));
-      document.documentElement.style.setProperty('--cta-h', (visible ? safe : 0) + 'px');
-      requestAnimationFrame(clampFabIntoViewport);
+      if(!visible) return 0;
+      const h = Math.ceil(cta.getBoundingClientRect().height);
+      /* 合理範圍 56–160px，避免異常 */
+      return Math.max(56, Math.min(h, 160));
     }
-    window.addEventListener('load', updateCtaHeight);
-    window.addEventListener('resize', updateCtaHeight);
-    window.addEventListener('orientationchange', updateCtaHeight);
-    const ctaEl = document.querySelector('.mobile-cta');
-    if(window.ResizeObserver && ctaEl){ new ResizeObserver(updateCtaHeight).observe(ctaEl); }
+    function updateCtaVar(){
+      const h = getCtaHeight();
+      document.documentElement.style.setProperty('--cta-h', h + 'px');
+      clampAndMaybeSnap(false); // 只校正位置，不強制吸附
+    }
 
-    /* 可拖曳 FAB（支援滑鼠/觸控，並記憶位置） */
+    window.addEventListener('load', updateCtaVar);
+    window.addEventListener('resize', updateCtaVar);
+    window.addEventListener('orientationchange', updateCtaVar);
+    const ctaEl = document.querySelector('.mobile-cta');
+    if(window.ResizeObserver && ctaEl) new ResizeObserver(updateCtaVar).observe(ctaEl);
+
+    /* 可拖曳 FAB（拖曳後自動靠邊吸附 + 記憶位置） */
     (function makeDraggableFab(btn){
       let startX=0, startY=0, startLeft=0, startTop=0, dragging=false;
+      // 讀取記憶位置
       const saved = localStorage.getItem('themeFabPos');
-      if(saved){ try{ const {left, top}=JSON.parse(saved); btn.style.left=left+'px'; btn.style.top=top+'px'; btn.style.right='auto'; btn.style.bottom='auto'; }catch(e){} }
+      if(saved){ try{ const {left, top}=JSON.parse(saved); setPos(left, top); }catch(e){} }
+
       function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
-      function getCta(){ const v=getComputedStyle(document.documentElement).getPropertyValue('--cta-h').trim(); return Math.max(0, parseFloat(v)||0); }
+      function setPos(l,t){
+        btn.style.left = l + 'px';
+        btn.style.top  = t + 'px';
+        btn.style.right='auto'; btn.style.bottom='auto';
+      }
+      function clampAndMaybeSnap(doSnap){
+        const r = btn.getBoundingClientRect();
+        const vw = window.innerWidth, vh = window.innerHeight;
+        const margin = 8, bottomGuard = getCtaHeight() + 8;
+        let left = clamp(r.left, margin, vw - r.width - margin);
+        let top  = clamp(r.top,  margin, vh - r.height - bottomGuard);
+
+        if(doSnap){
+          // 水平靠邊吸附
+          const snapLeft  = margin;
+          const snapRight = vw - r.width - margin;
+          left = (left + r.width/2 < vw/2) ? snapLeft : snapRight;
+        }
+        setPos(left, top);
+        localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
+      }
+
       function onDown(e){
         if(e.pointerType==='mouse' && e.button!==0) return;
-        e.preventDefault(); dragging=false; btn._dragging=false;
+        e.preventDefault();
+        dragging=false; btn._dragging=false;
+        // 拖曳時取消動畫，避免延遲
+        btn.style.transition = 'none';
         const r = btn.getBoundingClientRect();
         startX=e.clientX; startY=e.clientY; startLeft=r.left; startTop=r.top;
-        window.addEventListener('pointermove', onMove); window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
       }
       function onMove(e){
         const dx=e.clientX-startX, dy=e.clientY-startY;
         if(!dragging && (Math.abs(dx)>3 || Math.abs(dy)>3)){ dragging=true; btn._dragging=true; }
         if(!dragging) return;
+
         const vw=window.innerWidth, vh=window.innerHeight;
         const r = btn.getBoundingClientRect();
-        const margin=8, bottomGuard=getCta()+8;
-        const nl=clamp(startLeft+dx, margin, vw-r.width-margin);
-        const nt=clamp(startTop +dy, margin, vh-r.height-bottomGuard);
-        btn.style.left=nl+'px'; btn.style.top=nt+'px'; btn.style.right='auto'; btn.style.bottom='auto';
+        const margin=8, bottomGuard=getCtaHeight()+8;
+        const nl=clamp(startLeft+dx, margin, vw - r.width - margin);
+        const nt=clamp(startTop +dy, margin, vh - r.height - bottomGuard);
+        setPos(nl, nt);
       }
       function onUp(){
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', onUp);
-        if(dragging){ requestAnimationFrame(clampFabIntoViewport); setTimeout(()=>{ btn._dragging=false; },0); }
+        // 放手→恢復動畫並吸附
+        btn.style.transition = 'left .2s ease, top .2s ease';
+        clampAndMaybeSnap(true);
+        if(dragging){ setTimeout(()=>{ btn._dragging=false; },0); }
       }
+
       btn.addEventListener('pointerdown', onDown);
-      window.addEventListener('resize', clampFabIntoViewport);
-      window.addEventListener('orientationchange', clampFabIntoViewport);
-      /* 初次校正一次，避免 FAB 壓到 CTA */
-      setTimeout(clampFabIntoViewport, 0);
+      window.addEventListener('resize', ()=>clampAndMaybeSnap(false));
+      window.addEventListener('orientationchange', ()=>clampAndMaybeSnap(false));
+
+      // 初次校正
+      setTimeout(()=>clampAndMaybeSnap(false), 0);
+      // 對外（供 CTA 高度更新時呼叫）
+      window.clampAndMaybeSnap = clampAndMaybeSnap;
     })(themeFab);
   </script>
 </body>
