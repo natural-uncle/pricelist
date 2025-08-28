@@ -16,8 +16,6 @@
       --bar-bg:rgba(255,255,255,.95);
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
-      /* 預設回落值（JS 會覆蓋成實測） */
-      --cta-h:64px;
     }
     body.dark{
       --bg-color:#121212;
@@ -30,7 +28,6 @@
       --bar-bg:rgba(18,18,18,.95);
       --bar-shadow:0 -6px 24px rgba(0,0,0,.35);
       --divider:rgba(255,255,255,.12);
-      --cta-h:64px;
     }
 
     html,body{height:100%}
@@ -45,11 +42,13 @@
     h1{ margin:0; font-size:1.6rem; }
     main{ max-width:900px; margin:20px auto; padding:0 16px 20px; }
 
-    /* 浮動可拖曳主題鍵（吸附；避開 CTA；不重複 safe-area） */
+    /* ========== 浮動可拖曳主題鍵（吸附；避開 CTA；不使用 env 疊加） ========== */
     .theme-fab{
-      position:fixed; z-index:1000;
-      right:16px;
-      bottom:calc(var(--cta-h) + 12px);
+      position:fixed; z-index:1000; right:16px;
+      /* 下方偏移 = CTA 高度 + 12px；CTA 高度用與 body 一致的純 CSS 公式 */
+      bottom: calc(
+        12px + clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)))
+      );
       background:#444; color:#fff; border:none; padding:12px 14px; border-radius:999px;
       font-size:14px; font-weight:600; cursor:grab; user-select:none; touch-action:none;
       box-shadow:0 10px 24px rgba(0,0,0,.18);
@@ -57,16 +56,13 @@
     }
     .theme-fab:active{ cursor:grabbing; }
 
-    /* 卡片區塊 */
+    /* ========== 卡片區塊與列表 ========== */
     .section-card{
       background:var(--card-bg); border:1px solid var(--divider); border-radius:14px;
       padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-top:20px;
     }
-    .section-card>h2{
-      margin:0 0 12px; color:var(--header-bg); border-left:5px solid #40916c; padding-left:10px;
-    }
+    .section-card>h2{ margin:0 0 12px; color:var(--header-bg); border-left:5px solid #40916c; padding-left:10px; }
 
-    /* 項目清單卡片 */
     ul{ list-style:none; padding:0; margin:0; }
     .list-cards{ display:grid; gap:12px; grid-template-columns:1fr; }
     @media (min-width:720px){ .list-cards{ grid-template-columns:repeat(2,1fr);} }
@@ -91,34 +87,49 @@
     .btn-call{ background:var(--btn-call); }
     .cta-desktop{ text-align:center; margin-top:12px; }
 
-    /* 手機底部 CTA（內容含 safe-area；移除 min-height，靠內容自適應） */
+    /* ========== 手機底部 CTA（純 CSS 高度；不靠 JS 量測） ========== */
     .mobile-cta{
       position:fixed; left:0; right:0; bottom:0;
       background:var(--bar-bg); backdrop-filter:blur(8px); box-shadow:var(--bar-shadow);
-      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      /* 高度 = 56px + 安全區，並允許到 88px + 安全區；與 body padding 相同公式 */
+      height: clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)));
+      /* 內容 padding：底部包含安全區，剛好在總高度內，不會超出 */
+      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+      box-sizing: border-box;
       display:none; z-index:999; border-top:1px solid var(--divider);
     }
-    .mobile-cta .wrap{ max-width:900px; margin:0 auto; display:grid; gap:8px; grid-template-columns:1fr 1fr; }
-    .mobile-cta .btn{ width:100%; margin:0; text-align:center; padding:12px 14px; border-radius:12px; font-size:15px; }
+    .mobile-cta .wrap{
+      height:100%;
+      max-width:900px; margin:0 auto;
+      display:grid; gap:8px; grid-template-columns:1fr 1fr;
+    }
+    .mobile-cta .btn{
+      height:100%;
+      margin:0; text-align:center; border-radius:12px; font-size:15px;
+      display:flex; align-items:center; justify-content:center; padding:0 14px;
+    }
 
-    /* 行動版：只用實測 --cta-h 預留，不再 +env()，避免雙重留白 */
+    /* ========== 行動版：只用相同公式預留底部空間，永不過多也不會不足 ========== */
     @media (max-width:600px){
       h1{ font-size:1.2rem; }
       main{ padding:0 12px 16px; }
       .cta-desktop{ display:none; }
       .mobile-cta{ display:block; }
-      body{ padding-bottom:var(--cta-h); }
+      /* 和 .mobile-cta 相同的高度公式 → 完全對齊，不需要 JS */
+      body{
+        padding-bottom: clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)));
+      }
     }
     @media (max-width:400px){
       .list-cards>li{ padding:14px 16px; }
-      .mobile-cta .btn{ padding:12px 12px; font-size:14.5px; }
+      .mobile-cta .btn{ font-size:14.5px; }
     }
   </style>
 </head>
 <body>
   <header><h1>📌 自然大叔｜家電清洗服務價目表</h1></header>
 
-  <!-- 浮動可拖曳主題鍵（吸附） -->
+  <!-- 可拖曳主題鍵（拖曳後自動靠邊吸附） -->
   <button id="theme-fab" class="theme-fab" aria-label="切換深/淺色主題">🌙 深色</button>
 
   <main>
@@ -142,7 +153,7 @@
       </ul>
     </section>
 
-    <!-- 水管清洗（完整） -->
+    <!-- 水管清洗 -->
     <section class="section-card" aria-labelledby="pipe">
       <h2 id="pipe">🚿 水管清洗</h2>
       <ul class="list-cards">
@@ -206,7 +217,7 @@
     </div>
   </main>
 
-  <!-- 行動版底部 CTA（自適應高度；含安全區） -->
+  <!-- 手機底部 CTA（固定；高度純 CSS） -->
   <div class="mobile-cta" role="region" aria-label="快速聯絡">
     <div class="wrap">
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
@@ -217,7 +228,7 @@
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
 
   <script>
-    /* 主題切換 */
+    /* 主題切換（保留） */
     const themeFab = document.getElementById('theme-fab');
     function applyThemeFromStorage(){
       const saved = localStorage.getItem('theme');
@@ -235,32 +246,7 @@
     themeFab.addEventListener('click', (e)=>{ if(themeFab._dragging) return; toggleTheme(); });
     applyThemeFromStorage();
 
-    /* 量測 CTA 高度（含 safe-area），避免雙重留白；並讓 FAB 避讓 */
-    function measureCtaHeight(){
-      const mq = window.matchMedia('(max-width: 600px)');
-      const el = document.querySelector('.mobile-cta');
-      if(!el || !mq.matches || getComputedStyle(el).display === 'none') return 0;
-      // 強制 reflow 後量測，避免初載樣式未完成
-      el.style.willChange = 'height';
-      const h = Math.ceil(el.getBoundingClientRect().height);
-      el.style.willChange = '';
-      // 合理範圍：44–100px，更貼近你想要的「扁」效果
-      return Math.max(44, Math.min(h, 100));
-    }
-    function setCtaVar(){
-      const h = measureCtaHeight();
-      document.documentElement.style.setProperty('--cta-h', h + 'px');
-      clampAndSnap(false);
-    }
-
-    window.addEventListener('DOMContentLoaded', setCtaVar);
-    window.addEventListener('load', setCtaVar);
-    window.addEventListener('resize', setCtaVar);
-    window.addEventListener('orientationchange', setCtaVar);
-    const ctaEl = document.querySelector('.mobile-cta');
-    if(window.ResizeObserver && ctaEl) new ResizeObserver(setCtaVar).observe(ctaEl);
-
-    /* 可拖曳 FAB（放手自動靠邊吸附＋記憶；避開 CTA 區域） */
+    /* 可拖曳 FAB（放手自動靠邊吸附＋記憶；不再量測 CTA 高度） */
     (function makeDraggableFab(btn){
       let sx=0, sy=0, sl=0, st=0, dragging=false;
       const saved = localStorage.getItem('themeFabPos');
@@ -268,18 +254,6 @@
 
       function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
       function setPos(l,t){ btn.style.left=l+'px'; btn.style.top=t+'px'; btn.style.right='auto'; btn.style.bottom='auto'; }
-      function ctaH(){ const v=getComputedStyle(document.documentElement).getPropertyValue('--cta-h'); return parseFloat(v)||0; }
-      function clampAndSnap(snap){
-        const r = btn.getBoundingClientRect(), vw = innerWidth, vh = innerHeight;
-        const m = 8, guard = ctaH() + 8;
-        let left = clamp(r.left, m, vw - r.width - m);
-        let top  = clamp(r.top,  m, vh - r.height - guard);
-        if(snap){ left = (left + r.width/2 < vw/2) ? m : (vw - r.width - m); }
-        setPos(left, top);
-        localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
-      }
-      window.clampAndSnap = clampAndSnap;
-
       function onDown(e){
         if(e.pointerType==='mouse' && e.button!==0) return;
         e.preventDefault(); dragging=false; btn._dragging=false;
@@ -291,22 +265,32 @@
         const dx=e.clientX-sx, dy=e.clientY-sy;
         if(!dragging && (Math.abs(dx)>3||Math.abs(dy)>3)){ dragging=true; btn._dragging=true; }
         if(!dragging) return;
-        const r = btn.getBoundingClientRect(), vw=innerWidth, vh=innerHeight, m=8, guard=ctaH()+8;
-        const nl = clamp(sl+dx, m, vw - r.width - m);
-        const nt = clamp(st+dy, m, vh - r.height - guard);
+        const vw=innerWidth, vh=innerHeight, m=8;
+        const r = btn.getBoundingClientRect();
+        const nl=clamp(sl+dx, m, vw - r.width - m);
+        /* 垂直只保留基本 8px 安全距；CTA 高度已在 CSS 中處理，不需 JS 再避讓 */
+        const nt=clamp(st+dy, m, vh - r.height - m);
         setPos(nl, nt);
       }
       function onUp(){
         removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp);
         btn.style.transition='left .2s ease, top .2s ease';
-        clampAndSnap(true);
+        const r = btn.getBoundingClientRect(), vw = innerWidth, m = 8;
+        const snapLeft = m, snapRight = vw - r.width - m;
+        const left = (r.left + r.width/2 < vw/2) ? snapLeft : snapRight;
+        setPos(left, r.top);
+        localStorage.setItem('themeFabPos', JSON.stringify({left, top:r.top}));
         if(dragging){ setTimeout(()=>{ btn._dragging=false; },0); }
       }
       btn.addEventListener('pointerdown', onDown);
-      addEventListener('resize', ()=>clampAndSnap(false));
-      addEventListener('orientationchange', ()=>clampAndSnap(false));
-      // 初次保險
-      setTimeout(()=>clampAndSnap(false), 0);
+      addEventListener('resize', ()=>{
+        const r = btn.getBoundingClientRect(), vw = innerWidth, vh = innerHeight, m = 8;
+        const left = clamp(r.left, m, vw - r.width - m);
+        const top  = clamp(r.top,  m, vh - r.height - m);
+        setPos(left, top);
+        localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
+      });
+      setTimeout(()=>{ /* 初次保險校正 */ const r = btn.getBoundingClientRect(), vw=innerWidth, vh=innerHeight, m=8; setPos(Math.min(r.left, vw-r.width-m), Math.min(r.top, vh-r.height-m)); }, 0);
     })(themeFab);
   </script>
 </body>
