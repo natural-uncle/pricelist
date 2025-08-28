@@ -17,7 +17,7 @@
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
       /* ↓ 下修預設高度 */
-      --cta-h:30px;
+      --cta-h:64px;
     }
     body.dark{
       --bg-color:#121212;
@@ -31,7 +31,7 @@
       --bar-shadow:0 -6px 24px rgba(0,0,0,.35);
       --divider:rgba(255,255,255,.12);
       /* ↓ 深色也同步下修 */
-      --cta-h:30px;
+      --cta-h:72px;
     }
 
     html,body{height:100%}
@@ -88,13 +88,13 @@
       position:fixed; left:0; right:0; bottom:0;
       background:var(--bar-bg); backdrop-filter:blur(8px); box-shadow:var(--bar-shadow);
       /* ↓ 下修 padding 讓總高度更小 */
-      padding:2px 4px calc(2px + env(safe-area-inset-bottom));
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
       display:none; z-index:999; border-top:1px solid var(--divider);
       min-height:var(--cta-h);
     }
     .mobile-cta .wrap{ max-width:900px; margin:0 auto; display:grid; gap:8px; grid-template-columns:1fr 1fr; }
     /* ↓ 下修按鈕高與字級 */
-    .mobile-cta .btn{ width:100%; margin:0; text-align:center; padding:10px 12px; border-radius:12px; font-size:15px; }
+    .mobile-cta .btn{ width:100%; margin:0; text-align:center; padding:12px 14px; border-radius:12px; font-size:15px; }
 
     @media (max-width:600px){
       h1{ font-size:1.2rem; }
