@@ -16,6 +16,7 @@
       --bar-bg: rgba(255, 255, 255, 0.95);
       --bar-shadow: 0 -6px 24px rgba(0,0,0,0.08);
       --divider: rgba(0,0,0,.08);
+      --cta-h: 96px; /* 行動底部列預設高度（JS 會覆蓋） */
     }
     body.dark {
       --bg-color: #121212;
@@ -46,7 +47,6 @@
       color: white;
       text-align: center;
       padding: 20px 10px;
-      position: relative;
     }
     h1 { margin: 0; font-size: 1.6rem; }
     main {
@@ -55,17 +55,20 @@
       padding: 0 16px 20px;
     }
 
-    /* 工具列：主題鍵（隨卷軸移動） */
-    .tools { display: flex; justify-content: flex-end; gap: 8px; margin: 12px 0 16px; }
+    /* 工具列：主題鍵（置於內容流，sticky 跟著捲動） */
+    .tools {
+      position: sticky; top: 8px; z-index: 50;
+      display: flex; justify-content: flex-end; gap: 8px; margin: 12px 0 16px;
+      background: var(--bg-color);
+      padding: 6px; border-radius: 12px; border: 1px solid var(--divider);
+      box-shadow: 0 6px 16px rgba(0,0,0,.06);
+    }
     .theme-btn {
+      position: static; /* 確保不固定在視窗 */
       background:#444; color:#fff; border:none; padding:10px 14px; border-radius:999px;
       font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.12);
     }
     .theme-btn:active{ transform: translateY(1px); }
-    /* 保證按鈕不固定，隨內容卷動 */
-    .theme-btn { position: static; }
-    /* 隱藏舊版本的浮動按鈕/類別（若仍殘留於 DOM） */
-    #theme-fab, .theme-toggle { display:none !important; }
 
     /* 章節卡片 */
     .section-card {
@@ -102,7 +105,7 @@
     .price-line .price { min-width: 6em; text-align: right; }
     .badge { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:999px; margin-left:8px; background:#ffe8cc; color:#b85c00; }
 
-    footer { text-align: center; padding: 20px; font-size: 0.9rem; color: #aaa; }
+    footer { text-align: center; padding: 20px 16px; font-size: 0.9rem; color: #aaa; }
 
     /* Buttons */
     .btn {
@@ -129,18 +132,13 @@
     .mobile-cta .wrap { max-width: 900px; margin: 0 auto; display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
     .mobile-cta .btn { width: 100%; margin: 0; text-align: center; padding: 15px 18px; border-radius: 12px; font-size: 16px; }
 
-    /* 確保內容不被底部列遮住 */
-    .page-bottom-pad { height: 0; }
-
+    /* 行動版：保留 CTA 空間，避免遮擋頁尾與內容 */
     @media (max-width: 600px) {
       h1 { font-size: 1.2rem; }
-      main { padding: 0 12px 16px; }
+      main { padding: 0 12px calc(16px + var(--cta-h) + env(safe-area-inset-bottom)); }
       .cta-desktop { display: none; }
       .mobile-cta { display: block; }
-      .page-bottom-pad { height: calc(96px + env(safe-area-inset-bottom)); }
-    }
-  @media (max-width: 600px) {
-      body.has-mobile-cta { padding-bottom: calc(var(--cta-h, 96px) + env(safe-area-inset-bottom)); }
+      footer { margin: 16px 12px calc(16px + var(--cta-h) + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -150,7 +148,7 @@
   </header>
 
   <main>
-    <!-- 工具列（跟著卷軸移動） -->
+    <!-- 工具列（置於內容流，sticky 跟著捲動） -->
     <div class="tools">
       <button id="theme-toggle" class="theme-btn" aria-label="切換深/淺色主題">🌙 深色</button>
     </div>
@@ -277,12 +275,9 @@
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
       <a href="tel:0912356331" class="btn btn-call">📞 立即來電</a>
     </div>
-
-    <!-- 占位，避免內容被行動底部列遮住 -->
-    <div class="page-bottom-pad" aria-hidden="true"></div>
   </main>
 
-  <!-- 行動版：固定底部操作列 -->
+  <!-- 行動版：固定底部操作列（固定於視窗） -->
   <div class="mobile-cta" role="region" aria-label="快速聯絡">
     <div class="wrap">
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
@@ -293,10 +288,7 @@
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
 
   <script>
-    // 移除舊版殘留的固定主題鍵（若有）
-    document.querySelectorAll('#theme-fab, .theme-toggle').forEach(el => el.remove());
-
-    // 主題維持與切換（按鈕位於內容流內，會隨卷軸移動）
+    // ---- 主題維持與切換（工具列在內容流中，.tools 使用 sticky 會跟著捲動） ----
     const themeBtn = document.getElementById('theme-toggle');
     function applyThemeFromStorage() {
       const savedTheme = localStorage.getItem('theme');
@@ -314,26 +306,29 @@
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
     applyThemeFromStorage();
 
-    // 行動底部 CTA 高度偵測，避免遮擋頁尾與內容
-    function updateCtaPadding(){
+    // ---- 行動底部 CTA 高度偵測（保證頁尾與內容不被遮擋） ----
+    function updateCtaHeight(){
+      const mq = window.matchMedia('(max-width: 600px)');
       const cta = document.querySelector('.mobile-cta');
       if (!cta) return;
-      const isMobile = window.matchMedia('(max-width: 600px)').matches && getComputedStyle(cta).display !== 'none';
-      if (isMobile) {
+      const visible = mq.matches && getComputedStyle(cta).display !== 'none';
+      if (!visible) {
+        document.documentElement.style.setProperty('--cta-h', '0px');
+        return;
+      }
+      // 下一個 frame 再量，避免字體/布局尚未完成
+      requestAnimationFrame(() => {
         const h = Math.ceil(cta.getBoundingClientRect().height);
         document.documentElement.style.setProperty('--cta-h', h + 'px');
-        document.body.classList.add('has-mobile-cta');
-      } else {
-        document.documentElement.style.removeProperty('--cta-h');
-        document.body.classList.remove('has-mobile-cta');
-      }
+      });
     }
-    window.addEventListener('load', updateCtaPadding);
-    window.addEventListener('resize', updateCtaPadding);
-    window.addEventListener('orientationchange', updateCtaPadding);
-
-    // 若有占位元素，取消固定高度，改由上面 padding 控制
-    document.querySelectorAll('.page-bottom-pad').forEach(el => el.style.height = '0px');
+    window.addEventListener('load', updateCtaHeight);
+    window.addEventListener('resize', updateCtaHeight);
+    window.addEventListener('orientationchange', updateCtaHeight);
+    const ctaEl = document.querySelector('.mobile-cta');
+    if (window.ResizeObserver && ctaEl) {
+      new ResizeObserver(updateCtaHeight).observe(ctaEl);
+    }
   </script>
 </body>
 </html>
