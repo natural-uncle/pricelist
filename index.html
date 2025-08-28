@@ -62,6 +62,10 @@
       font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,.12);
     }
     .theme-btn:active{ transform: translateY(1px); }
+    /* 保證按鈕不固定，隨內容卷動 */
+    .theme-btn { position: static; }
+    /* 隱藏舊版本的浮動按鈕/類別（若仍殘留於 DOM） */
+    #theme-fab, .theme-toggle { display:none !important; }
 
     /* 章節卡片 */
     .section-card {
@@ -126,7 +130,7 @@
     .mobile-cta .btn { width: 100%; margin: 0; text-align: center; padding: 15px 18px; border-radius: 12px; font-size: 16px; }
 
     /* 確保內容不被底部列遮住 */
-    .page-bottom-pad { height: 84px; }
+    .page-bottom-pad { height: 0; }
 
     @media (max-width: 600px) {
       h1 { font-size: 1.2rem; }
@@ -134,6 +138,9 @@
       .cta-desktop { display: none; }
       .mobile-cta { display: block; }
       .page-bottom-pad { height: calc(96px + env(safe-area-inset-bottom)); }
+    }
+  @media (max-width: 600px) {
+      body.has-mobile-cta { padding-bottom: calc(var(--cta-h, 96px) + env(safe-area-inset-bottom)); }
     }
   </style>
 </head>
@@ -286,6 +293,9 @@
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
 
   <script>
+    // 移除舊版殘留的固定主題鍵（若有）
+    document.querySelectorAll('#theme-fab, .theme-toggle').forEach(el => el.remove());
+
     // 主題維持與切換（按鈕位於內容流內，會隨卷軸移動）
     const themeBtn = document.getElementById('theme-toggle');
     function applyThemeFromStorage() {
@@ -303,6 +313,27 @@
     }
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
     applyThemeFromStorage();
+
+    // 行動底部 CTA 高度偵測，避免遮擋頁尾與內容
+    function updateCtaPadding(){
+      const cta = document.querySelector('.mobile-cta');
+      if (!cta) return;
+      const isMobile = window.matchMedia('(max-width: 600px)').matches && getComputedStyle(cta).display !== 'none';
+      if (isMobile) {
+        const h = Math.ceil(cta.getBoundingClientRect().height);
+        document.documentElement.style.setProperty('--cta-h', h + 'px');
+        document.body.classList.add('has-mobile-cta');
+      } else {
+        document.documentElement.style.removeProperty('--cta-h');
+        document.body.classList.remove('has-mobile-cta');
+      }
+    }
+    window.addEventListener('load', updateCtaPadding);
+    window.addEventListener('resize', updateCtaPadding);
+    window.addEventListener('orientationchange', updateCtaPadding);
+
+    // 若有占位元素，取消固定高度，改由上面 padding 控制
+    document.querySelectorAll('.page-bottom-pad').forEach(el => el.style.height = '0px');
   </script>
 </body>
 </html>
