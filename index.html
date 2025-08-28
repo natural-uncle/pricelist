@@ -16,6 +16,7 @@
       --bar-bg:rgba(255,255,255,.95);
       --bar-shadow:0 -6px 24px rgba(0,0,0,.08);
       --divider:rgba(0,0,0,.08);
+      --cta-h:0px; /* 由 JS 量測覆寫為實際高度（含安全區） */
     }
     body.dark{
       --bg-color:#121212;
@@ -42,13 +43,10 @@
     h1{ margin:0; font-size:1.6rem; }
     main{ max-width:900px; margin:20px auto; padding:0 16px 20px; }
 
-    /* ========== 浮動可拖曳主題鍵（吸附；避開 CTA；不使用 env 疊加） ========== */
+    /* 可拖曳主題鍵（吸附＋避開 CTA） */
     .theme-fab{
       position:fixed; z-index:1000; right:16px;
-      /* 下方偏移 = CTA 高度 + 12px；CTA 高度用與 body 一致的純 CSS 公式 */
-      bottom: calc(
-        12px + clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)))
-      );
+      bottom:calc(var(--cta-h, 0px) + 12px);
       background:#444; color:#fff; border:none; padding:12px 14px; border-radius:999px;
       font-size:14px; font-weight:600; cursor:grab; user-select:none; touch-action:none;
       box-shadow:0 10px 24px rgba(0,0,0,.18);
@@ -56,13 +54,14 @@
     }
     .theme-fab:active{ cursor:grabbing; }
 
-    /* ========== 卡片區塊與列表 ========== */
+    /* 區塊卡片 */
     .section-card{
       background:var(--card-bg); border:1px solid var(--divider); border-radius:14px;
       padding:18px; box-shadow:0 2px 10px rgba(0,0,0,.06); margin-top:20px;
     }
     .section-card>h2{ margin:0 0 12px; color:var(--header-bg); border-left:5px solid #40916c; padding-left:10px; }
 
+    /* 內部卡片清單 */
     ul{ list-style:none; padding:0; margin:0; }
     .list-cards{ display:grid; gap:12px; grid-template-columns:1fr; }
     @media (min-width:720px){ .list-cards{ grid-template-columns:repeat(2,1fr);} }
@@ -87,41 +86,39 @@
     .btn-call{ background:var(--btn-call); }
     .cta-desktop{ text-align:center; margin-top:12px; }
 
-    /* ========== 手機底部 CTA（純 CSS 高度；不靠 JS 量測） ========== */
+    /* 手機底部 CTA（加入訊息列於按鈕上方） */
     .mobile-cta{
       position:fixed; left:0; right:0; bottom:0;
       background:var(--bar-bg); backdrop-filter:blur(8px); box-shadow:var(--bar-shadow);
-      /* 高度 = 56px + 安全區，並允許到 88px + 安全區；與 body padding 相同公式 */
-      height: clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)));
-      /* 內容 padding：底部包含安全區，剛好在總高度內，不會超出 */
-      padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
-      box-sizing: border-box;
-      display:none; z-index:999; border-top:1px solid var(--divider);
+      padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+      box-sizing:border-box; display:none; z-index:999; border-top:1px solid var(--divider);
     }
     .mobile-cta .wrap{
-      height:100%;
-      max-width:900px; margin:0 auto;
-      display:grid; gap:8px; grid-template-columns:1fr 1fr;
+      max-width:900px; margin:0 auto; display:grid; gap:8px;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:auto auto; /* 第一列: 訊息；第二列: 兩顆按鈕 */
+      align-items:center;
+    }
+    .mobile-cta .msg{
+      grid-column:1 / -1;
+      text-align:center; font-weight:800; font-size:14px; line-height:1.3;
+      color:var(--text-color);
+      opacity:.9;
     }
     .mobile-cta .btn{
-      height:100%;
-      margin:0; text-align:center; border-radius:12px; font-size:15px;
-      display:flex; align-items:center; justify-content:center; padding:0 14px;
+      width:100%; margin:0; text-align:center; border-radius:12px; font-size:15px;
+      padding:12px 14px;
     }
 
-    /* ========== 行動版：只用相同公式預留底部空間，永不過多也不會不足 ========== */
+    /* 僅手機時顯示底部 CTA，並用「實測高度」留空間（由 JS 設定 --cta-h） */
     @media (max-width:600px){
       h1{ font-size:1.2rem; }
       main{ padding:0 12px 16px; }
       .cta-desktop{ display:none; }
       .mobile-cta{ display:block; }
-      /* 和 .mobile-cta 相同的高度公式 → 完全對齊，不需要 JS */
-      body{
-        padding-bottom: clamp(56px, calc(56px + env(safe-area-inset-bottom)), calc(88px + env(safe-area-inset-bottom)));
-      }
+      body{ padding-bottom: var(--cta-h); }
     }
     @media (max-width:400px){
-      .list-cards>li{ padding:14px 16px; }
       .mobile-cta .btn{ font-size:14.5px; }
     }
   </style>
@@ -129,7 +126,7 @@
 <body>
   <header><h1>📌 自然大叔｜家電清洗服務價目表</h1></header>
 
-  <!-- 可拖曳主題鍵（拖曳後自動靠邊吸附） -->
+  <!-- 浮動可拖曳主題鍵（自動靠邊吸附） -->
   <button id="theme-fab" class="theme-fab" aria-label="切換深/淺色主題">🌙 深色</button>
 
   <main>
@@ -157,20 +154,10 @@
     <section class="section-card" aria-labelledby="pipe">
       <h2 id="pipe">🚿 水管清洗</h2>
       <ul class="list-cards">
-        <li>
-          <div class="title">自來水管清洗保養</div>
-          <div class="meta">標準住宅適用</div>
-        </li>
-        <li>
-          <div class="title">無廚一衛</div>
-          <div class="price-line"><div class="label">套內基礎方案</div><div class="price">$3,200</div></div>
-        </li>
-        <li>
-          <div class="title">一廚一衛</div>
-          <div class="price-line"><div class="label">標準方案</div><div class="price">$4,200</div></div>
-          <div class="meta" style="margin-top:6px;">
-            每增加一廚或一衛 <span class="price">+$500</span>、每多一迴路 <span class="price">+$1,000</span>、五樓以上每層 <span class="price">+$1,000</span>
-          </div>
+        <li><div class="title">自來水管清洗保養</div><div class="meta">標準住宅適用</div></li>
+        <li><div class="title">無廚一衛</div><div class="price-line"><div class="label">套內基礎方案</div><div class="price">$3,200</div></div></li>
+        <li><div class="title">一廚一衛</div><div class="price-line"><div class="label">標準方案</div><div class="price">$4,200</div></div>
+          <div class="meta" style="margin-top:6px;">每增加一廚或一衛 <span class="price">+$500</span>、每多一迴路 <span class="price">+$1,000</span>、五樓以上每層 <span class="price">+$1,000</span></div>
         </li>
       </ul>
     </section>
@@ -179,14 +166,10 @@
     <section class="section-card" aria-labelledby="others">
       <h2 id="others">🌀 其他服務</h2>
       <ul class="list-cards">
-        <li>
-          <div class="title">直立式洗衣機清洗</div>
-          <div class="price-line"><div class="label">每台</div><div class="price">$2,000</div></div>
+        <li><div class="title">直立式洗衣機清洗</div><div class="price-line"><div class="label">每台</div><div class="price">$2,000</div></div>
           <div class="meta" style="margin-top:6px;">若有清洗冷氣，再優惠 <span class="price">$200</span></div>
         </li>
-        <li>
-          <div class="title">家用水塔清洗</div>
-          <div class="price-line"><div class="label">每一顆</div><div class="price">$1,000</div></div>
+        <li><div class="title">家用水塔清洗</div><div class="price-line"><div class="label">每一顆</div><div class="price">$1,000</div></div>
           <div class="meta" style="margin-top:6px;">若同時清洗自來水管，再優惠 <span class="price">$200</span></div>
         </li>
       </ul>
@@ -196,20 +179,16 @@
     <section class="section-card" aria-labelledby="addons">
       <h2 id="addons">✳️ 選配項目</h2>
       <ul class="list-cards">
-        <li>
-          <div class="title">冷氣防黴處理</div>
-          <div class="price-line"><div class="label">每台</div><div class="price">$300</div></div>
+        <li><div class="title">冷氣防黴處理</div><div class="price-line"><div class="label">每台</div><div class="price">$300</div></div>
           <div class="meta" style="margin-top:6px;">滿五台優惠 <span class="price">$250／台</span>；奈米級抗菌、日本納豆菌淨化、無香料水性原料</div>
         </li>
-        <li>
-          <div class="title">臭氧全面消毒（密閉空間）</div>
-          <div class="price-line"><div class="label">每間房</div><div class="price">$200</div></div>
+        <li><div class="title">臭氧全面消毒（密閉空間）</div><div class="price-line"><div class="label">每間房</div><div class="price">$200</div></div>
           <div class="meta" style="margin-top:6px;">除臭、氧化污染物、抑菌防霉、空氣淨化</div>
         </li>
       </ul>
     </section>
 
-    <!-- 桌機版 CTA -->
+    <!-- 桌機版 CTA（仍保留） -->
     <div class="cta-desktop" aria-label="聯絡行動">
       <div class="meta" style="opacity:.85; margin-bottom:6px;">馬上預約，三台以上現省 $900</div>
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
@@ -217,9 +196,10 @@
     </div>
   </main>
 
-  <!-- 手機底部 CTA（固定；高度純 CSS） -->
+  <!-- 手機底部固定 CTA：上方加一句促銷文案 -->
   <div class="mobile-cta" role="region" aria-label="快速聯絡">
     <div class="wrap">
+      <div class="msg">馬上預約，三台以上現省 $900</div>
       <a href="https://lin.ee/OHk6Rn7" class="btn btn-line">📱 LINE 預約</a>
       <a href="tel:0912356331" class="btn btn-call">📞 立即來電</a>
     </div>
@@ -228,7 +208,7 @@
   <footer>© 2025 自然大叔｜專業家電清洗服務</footer>
 
   <script>
-    /* 主題切換（保留） */
+    /* 主題切換 */
     const themeFab = document.getElementById('theme-fab');
     function applyThemeFromStorage(){
       const saved = localStorage.getItem('theme');
@@ -246,51 +226,66 @@
     themeFab.addEventListener('click', (e)=>{ if(themeFab._dragging) return; toggleTheme(); });
     applyThemeFromStorage();
 
-    /* 可拖曳 FAB（放手自動靠邊吸附＋記憶；不再量測 CTA 高度） */
+    /* —— 量測 .mobile-cta 實際高度（含安全區），讓 body 只預留剛好空間 —— */
+    function measureCta(){
+      const mq = window.matchMedia('(max-width: 600px)');
+      const cta = document.querySelector('.mobile-cta');
+      const visible = !!cta && mq.matches && getComputedStyle(cta).display !== 'none';
+      const h = visible ? Math.ceil(cta.getBoundingClientRect().height) : 0;
+      // 合理範圍，避免偶發值
+      const safe = Math.max(56, Math.min(h, 160));
+      document.documentElement.style.setProperty('--cta-h', safe + 'px');
+    }
+    window.addEventListener('DOMContentLoaded', measureCta);
+    window.addEventListener('load', measureCta);
+    window.addEventListener('resize', measureCta);
+    window.addEventListener('orientationchange', measureCta);
+    const ctaEl = document.querySelector('.mobile-cta');
+    if (window.ResizeObserver && ctaEl) new ResizeObserver(measureCta).observe(ctaEl);
+
+    /* 可拖曳 FAB（放手靠邊吸附，避開 CTA 高度） */
     (function makeDraggableFab(btn){
       let sx=0, sy=0, sl=0, st=0, dragging=false;
       const saved = localStorage.getItem('themeFabPos');
-      if(saved){ try{ const {left, top} = JSON.parse(saved); setPos(left, top); } catch(e){} }
+      if(saved){ try{ const {left, top}=JSON.parse(saved); setPos(left, top); }catch(e){} }
 
-      function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
       function setPos(l,t){ btn.style.left=l+'px'; btn.style.top=t+'px'; btn.style.right='auto'; btn.style.bottom='auto'; }
+      function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+      function ctaH(){ return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cta-h'))||0; }
+
       function onDown(e){
         if(e.pointerType==='mouse' && e.button!==0) return;
-        e.preventDefault(); dragging=false; btn._dragging=false;
-        btn.style.transition='none';
-        const r = btn.getBoundingClientRect(); sx=e.clientX; sy=e.clientY; sl=r.left; st=r.top;
+        e.preventDefault(); dragging=false; btn._dragging=false; btn.style.transition='none';
+        const r=btn.getBoundingClientRect(); sx=e.clientX; sy=e.clientY; sl=r.left; st=r.top;
         addEventListener('pointermove', onMove); addEventListener('pointerup', onUp);
       }
       function onMove(e){
         const dx=e.clientX-sx, dy=e.clientY-sy;
         if(!dragging && (Math.abs(dx)>3||Math.abs(dy)>3)){ dragging=true; btn._dragging=true; }
         if(!dragging) return;
-        const vw=innerWidth, vh=innerHeight, m=8;
-        const r = btn.getBoundingClientRect();
+        const vw=innerWidth, vh=innerHeight, m=8, g=ctaH()+8;
+        const r=btn.getBoundingClientRect();
         const nl=clamp(sl+dx, m, vw - r.width - m);
-        /* 垂直只保留基本 8px 安全距；CTA 高度已在 CSS 中處理，不需 JS 再避讓 */
-        const nt=clamp(st+dy, m, vh - r.height - m);
+        const nt=clamp(st+dy, m, vh - r.height - g);
         setPos(nl, nt);
       }
       function onUp(){
         removeEventListener('pointermove', onMove); removeEventListener('pointerup', onUp);
         btn.style.transition='left .2s ease, top .2s ease';
-        const r = btn.getBoundingClientRect(), vw = innerWidth, m = 8;
-        const snapLeft = m, snapRight = vw - r.width - m;
-        const left = (r.left + r.width/2 < vw/2) ? snapLeft : snapRight;
+        const r=btn.getBoundingClientRect(), vw=innerWidth, m=8;
+        const left=(r.left + r.width/2 < vw/2) ? m : (vw - r.width - m);
         setPos(left, r.top);
         localStorage.setItem('themeFabPos', JSON.stringify({left, top:r.top}));
         if(dragging){ setTimeout(()=>{ btn._dragging=false; },0); }
       }
-      btn.addEventListener('pointerdown', onDown);
-      addEventListener('resize', ()=>{
-        const r = btn.getBoundingClientRect(), vw = innerWidth, vh = innerHeight, m = 8;
-        const left = clamp(r.left, m, vw - r.width - m);
-        const top  = clamp(r.top,  m, vh - r.height - m);
-        setPos(left, top);
-        localStorage.setItem('themeFabPos', JSON.stringify({left, top}));
+      addEventListener('resize', ()=>{ // 確保 FAB 不會跑出視窗或壓到 CTA
+        const r=btn.getBoundingClientRect(), vw=innerWidth, vh=innerHeight, m=8, g=ctaH()+8;
+        const l=clamp(r.left, m, vw - r.width - m);
+        const t=clamp(r.top,  m, vh - r.height - g);
+        setPos(l, t); localStorage.setItem('themeFabPos', JSON.stringify({left:l, top:t}));
       });
-      setTimeout(()=>{ /* 初次保險校正 */ const r = btn.getBoundingClientRect(), vw=innerWidth, vh=innerHeight, m=8; setPos(Math.min(r.left, vw-r.width-m), Math.min(r.top, vh-r.height-m)); }, 0);
+      btn.addEventListener('pointerdown', onDown);
+      setTimeout(measureCta, 0); // 初次校正 CTA 高度
     })(themeFab);
   </script>
 </body>
